@@ -8,6 +8,20 @@ export const STATUS_OPTIONS = [
   'Rejected'
 ];
 
+// Priority options
+export const PRIORITY_OPTIONS = [
+  'Low',
+  'Medium',
+  'High'
+];
+
+// Priority color mapping for UI
+export const PRIORITY_COLORS = {
+  'Low': 'bg-gray-100 text-gray-600 border-gray-300',
+  'Medium': 'bg-yellow-100 text-yellow-700 border-yellow-300',
+  'High': 'bg-red-100 text-red-700 border-red-300'
+};
+
 // Industry type options
 export const INDUSTRY_TYPES = [
   'Company',

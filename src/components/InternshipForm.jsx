@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
-import { INDUSTRY_TYPES, STATUS_OPTIONS, DEFAULT_CONTACT } from '../utils/constants';
+import { INDUSTRY_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, DEFAULT_CONTACT } from '../utils/constants';
 import { cleanContacts } from '../utils/helpers';
 
 export default function InternshipForm({ 
@@ -15,6 +15,7 @@ export default function InternshipForm({
     address: '',
     region_id: '',
     status: 'Not Applied',
+    priority: 'Medium',
     notes: '',
     point_of_contacts: [{ ...DEFAULT_CONTACT }]
   });
@@ -27,6 +28,7 @@ export default function InternshipForm({
         address: internship.address || '',
         region_id: internship.region_id || '',
         status: internship.status || 'Not Applied',
+        priority: internship.priority || 'Medium',
         notes: internship.notes || '',
         point_of_contacts: Array.isArray(internship.point_of_contacts) && internship.point_of_contacts.length > 0
           ? internship.point_of_contacts
@@ -156,20 +158,37 @@ export default function InternshipForm({
               />
             </div>
 
-            {/* Status */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-gray-700">
-                Application Status
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-              >
-                {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
+            {/* Status & Priority */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Application Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Priority
+                </label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                >
+                  {PRIORITY_OPTIONS.map((priority) => (
+                    <option key={priority} value={priority}>{priority}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             {/* Points of Contact */}

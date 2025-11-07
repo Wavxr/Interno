@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import InternshipRow from './InternshipRow';
+import InternshipCard from './InternshipCard';
 
 export default function RegionSection({ 
   regionName, 
@@ -31,19 +32,35 @@ export default function RegionSection({
         </h2>
       </button>
 
-      {/* Internships Table */}
+      {/* Internships - Card View (Mobile) */}
       {isExpanded && internships.length > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
+        <div className="md:hidden space-y-3">
+          {internships.map((internship) => (
+            <InternshipCard
+              key={internship.id}
+              internship={internship}
+              onUpdate={onUpdateInternship}
+              onDelete={onDeleteInternship}
+              onEdit={onEditInternship}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Internships - Table View (Desktop) */}
+      {isExpanded && internships.length > 0 && (
+        <div className="hidden md:block rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full table-fixed">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50/50">
                   <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 w-[18%]">Company</th>
-                  <th className="hidden md:table-cell px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Industry</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 w-[22%]">Location</th>
-                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[14%]">Contacts</th>
-                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[14%]">Notes</th>
-                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[14%]">Status</th>
+                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Industry</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-semibold text-gray-600 w-[20%]">Location</th>
+                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Contacts</th>
+                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Notes</th>
+                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Priority</th>
+                  <th className="px-2 py-2.5 text-left text-xs font-semibold text-gray-600 w-[12%]">Status</th>
                   <th className="px-2 py-2.5 w-[6%]"></th>
                 </tr>
               </thead>

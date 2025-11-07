@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Building2, MapPin, User, Pencil, Trash2, MessageSquare, Users } from 'lucide-react';
-import { STATUS_COLORS, STATUS_OPTIONS } from '../utils/constants';
+import { Building2, MapPin, User, Pencil, Trash2, MessageSquare, Users, Flag } from 'lucide-react';
+import { STATUS_COLORS, STATUS_OPTIONS, PRIORITY_COLORS, PRIORITY_OPTIONS } from '../utils/constants';
 
 export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }) {
   const [showContactsModal, setShowContactsModal] = useState(false);
@@ -12,7 +12,8 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
     industry_type, 
     point_of_contacts = [], 
     address, 
-    status, 
+    status,
+    priority = 'Medium',
     notes
   } = internship;
 
@@ -25,16 +26,23 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
     onUpdate({ ...internship, status: newStatus });
   };
 
+  const handlePriorityChange = (e) => {
+    e.stopPropagation();
+    const newPriority = e.target.value;
+    // Directly update without opening the form
+    onUpdate({ ...internship, priority: newPriority });
+  };
+
   return (
     <>
       <tr className="group border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
         {/* Company Name */}
-        <td className="px-3 py-2 w-[18%] md:w-[18%]">
+        <td className="px-3 py-2 w-[18%]">
           <div className="font-medium text-gray-900 text-sm truncate">{name}</div>
         </td>
 
-        {/* Industry - Hidden on mobile */}
-        <td className="hidden md:table-cell px-2 py-2 w-[12%]">
+        {/* Industry */}
+        <td className="px-2 py-2 w-[12%]">
           <div className="flex items-center gap-1.5 text-sm text-gray-600">
             <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
             <span className="truncate">{industry_type}</span>
@@ -42,7 +50,7 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
         </td>
 
         {/* Location */}
-        <td className="px-3 py-2 w-[22%] md:w-[22%]">
+        <td className="px-3 py-2 w-[20%]">
           {address ? (
             <div className="flex items-center gap-1.5 text-sm text-gray-600">
               <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
@@ -54,29 +62,45 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
         </td>
 
         {/* Contacts Button */}
-        <td className="px-2 py-2 w-[14%] md:w-[14%]">
+        <td className="px-2 py-2 w-[12%]">
           <button
             onClick={() => setShowContactsModal(true)}
             className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors"
           >
             <Users className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-            <span className="hidden sm:inline">{contacts.length > 0 ? `${contacts.length}` : 'None'}</span>
+            <span>{contacts.length > 0 ? `${contacts.length}` : 'None'}</span>
           </button>
         </td>
 
         {/* Notes Button */}
-        <td className="px-2 py-2 w-[14%] md:w-[14%]">
+        <td className="px-2 py-2 w-[12%]">
           <button
             onClick={() => setShowNotesModal(true)}
             className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-900 transition-colors"
           >
             <MessageSquare className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
-            <span className="hidden sm:inline">{notes ? 'View' : 'None'}</span>
+            <span>{notes ? 'View' : 'None'}</span>
           </button>
         </td>
 
-        {/* Status Dropdown - Moved to end */}
-        <td className="px-2 py-2 w-[14%] md:w-[14%]">
+        {/* Priority Dropdown */}
+        <td className="px-2 py-2 w-[12%]">
+          <select
+            value={priority}
+            onChange={handlePriorityChange}
+            onClick={(e) => e.stopPropagation()}
+            className={`w-full text-xs font-medium rounded-md border px-2 py-1.5 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${PRIORITY_COLORS[priority] || PRIORITY_COLORS['Medium']}`}
+          >
+            {PRIORITY_OPTIONS.map((pri) => (
+              <option key={pri} value={pri}>
+                {pri}
+              </option>
+            ))}
+          </select>
+        </td>
+
+        {/* Status Dropdown */}
+        <td className="px-2 py-2 w-[12%]">
           <select
             value={status}
             onChange={handleStatusChange}
@@ -119,7 +143,7 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
       {/* Contacts Modal */}
       {showContactsModal && (
         <tr>
-          <td colSpan="7" className="p-0">
+          <td colSpan="8" className="p-0">
             <div 
               className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
               onClick={() => setShowContactsModal(false)}
@@ -173,7 +197,7 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
       {/* Notes Modal */}
       {showNotesModal && (
         <tr>
-          <td colSpan="7" className="p-0">
+          <td colSpan="8" className="p-0">
             <div 
               className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
               onClick={() => setShowNotesModal(false)}
