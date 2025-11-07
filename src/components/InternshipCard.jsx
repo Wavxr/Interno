@@ -19,6 +19,17 @@ export default function InternshipCard({ internship, onUpdate, onDelete, onEdit 
 
   const contacts = Array.isArray(point_of_contacts) ? point_of_contacts : [];
 
+  const copyToClipboard = (text, label) => {
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Optional: Could add a toast notification here
+        console.log(`${label} copied to clipboard`);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  };
+
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
     onUpdate({ ...internship, status: newStatus });
@@ -35,9 +46,19 @@ export default function InternshipCard({ internship, onUpdate, onDelete, onEdit 
         {/* Header with Company Name and Actions */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-base truncate">{name}</h3>
+            <h3 
+              onClick={() => copyToClipboard(name, 'Company name')}
+              className="font-semibold text-gray-900 text-base truncate cursor-pointer hover:text-blue-600 transition-colors"
+              title="Click to copy"
+            >
+              {name}
+            </h3>
             {industry_type && (
-              <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-600">
+              <div 
+                onClick={() => copyToClipboard(industry_type, 'Industry')}
+                className="flex items-center gap-1.5 mt-1 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition-colors"
+                title="Click to copy"
+              >
                 <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
                 <span className="truncate">{industry_type}</span>
               </div>
@@ -69,7 +90,11 @@ export default function InternshipCard({ internship, onUpdate, onDelete, onEdit 
 
         {/* Location */}
         {address && (
-          <div className="flex items-center gap-1.5 mb-3 text-sm text-gray-600">
+          <div 
+            onClick={() => copyToClipboard(address, 'Location')}
+            className="flex items-center gap-1.5 mb-3 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition-colors"
+            title="Click to copy"
+          >
             <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
             <span className="truncate">{address}</span>
           </div>

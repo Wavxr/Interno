@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   fetchInternships,
   fetchInternshipsGroupedByRegion,
@@ -8,13 +8,14 @@ import {
   updateInternshipStatus,
   updateInternshipNotes
 } from '../services/internshipsService';
+import { supabase } from '../services/supabaseClient';
 
 export const useInternships = (groupByRegion = false) => {
   const [internships, setInternships] = useState(groupByRegion ? {} : []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadInternships = async () => {
+  const loadInternships = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -28,16 +29,32 @@ export const useInternships = (groupByRegion = false) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [groupByRegion]);
 
   useEffect(() => {
     loadInternships();
-  }, [groupByRegion]);
+
+    // Set up realtime subscription for instant updates
+    const subscription = supabase
+      .channel('internships_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'internships' }, 
+        () => {
+          // Reload data when any change occurs
+          loadInternships();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadInternships]);
 
   const addInternship = async (internshipData) => {
     try {
       const newInternship = await createInternship(internshipData);
-      await loadInternships(); // Refresh the list
+      // Realtime subscription will handle the update
       return newInternship;
     } catch (err) {
       setError(err.message);
@@ -48,7 +65,7 @@ export const useInternships = (groupByRegion = false) => {
   const updateInternshipById = async (id, updates) => {
     try {
       const updated = await updateInternship(id, updates);
-      await loadInternships(); // Refresh the list
+      // Realtime subscription will handle the update
       return updated;
     } catch (err) {
       setError(err.message);
@@ -59,7 +76,7 @@ export const useInternships = (groupByRegion = false) => {
   const removeInternship = async (id) => {
     try {
       await deleteInternship(id);
-      await loadInternships(); // Refresh the list
+      // Realtime subscription will handle the update
     } catch (err) {
       setError(err.message);
       throw err;
@@ -69,7 +86,7 @@ export const useInternships = (groupByRegion = false) => {
   const changeStatus = async (id, status) => {
     try {
       await updateInternshipStatus(id, status);
-      await loadInternships(); // Refresh the list
+      // Realtime subscription will handle the update
     } catch (err) {
       setError(err.message);
       throw err;
@@ -79,7 +96,7 @@ export const useInternships = (groupByRegion = false) => {
   const saveNotes = async (id, notes) => {
     try {
       await updateInternshipNotes(id, notes);
-      await loadInternships(); // Refresh the list
+      // Realtime subscription will handle the update
     } catch (err) {
       setError(err.message);
       throw err;

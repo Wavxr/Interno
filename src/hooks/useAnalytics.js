@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchAnalytics } from '../services/analyticsService';
+import { supabase } from '../services/supabaseClient';
 
 export const useAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -18,11 +19,27 @@ export const useAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadAnalytics();
-  }, []);
+
+    // Set up realtime subscription for instant updates
+    const subscription = supabase
+      .channel('analytics_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'internships' }, 
+        () => {
+          // Reload analytics when any change occurs
+          loadAnalytics();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [loadAnalytics]);
 
   return {
     analytics,

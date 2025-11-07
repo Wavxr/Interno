@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
-import { INDUSTRY_TYPES, STATUS_OPTIONS, PRIORITY_OPTIONS, DEFAULT_CONTACT } from '../utils/constants';
+import { STATUS_OPTIONS, PRIORITY_OPTIONS, DEFAULT_CONTACT } from '../utils/constants';
 import { cleanContacts } from '../utils/helpers';
 
 export default function InternshipForm({ 
@@ -11,7 +11,7 @@ export default function InternshipForm({
 }) {
   const [formData, setFormData] = useState({
     name: '',
-    industry_type: 'Company',
+    industry_type: '',
     address: '',
     region_id: '',
     status: 'Not Applied',
@@ -24,7 +24,7 @@ export default function InternshipForm({
     if (internship) {
       setFormData({
         name: internship.name || '',
-        industry_type: internship.industry_type || 'Company',
+        industry_type: internship.industry_type || '',
         address: internship.address || '',
         region_id: internship.region_id || '',
         status: internship.status || 'Not Applied',
@@ -116,15 +116,13 @@ export default function InternshipForm({
                 <label className="mb-1.5 block text-sm font-medium text-gray-700">
                   Industry Type
                 </label>
-                <select
+                <input
+                  type="text"
                   value={formData.industry_type}
                   onChange={(e) => setFormData({ ...formData, industry_type: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
-                >
-                  {INDUSTRY_TYPES.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400"
+                  placeholder="e.g., Technology, Finance, Healthcare"
+                />
               </div>
 
               <div>

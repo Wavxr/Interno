@@ -19,6 +19,17 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
 
   const contacts = Array.isArray(point_of_contacts) ? point_of_contacts : [];
 
+  const copyToClipboard = (text, label) => {
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // Optional: Could add a toast notification here
+        console.log(`${label} copied to clipboard`);
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+      });
+    }
+  };
+
   const handleStatusChange = (e) => {
     e.stopPropagation();
     const newStatus = e.target.value;
@@ -38,12 +49,22 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
       <tr className="group border-b border-gray-200 hover:bg-gray-50/50 transition-colors">
         {/* Company Name */}
         <td className="px-3 py-2 w-[18%]">
-          <div className="font-medium text-gray-900 text-sm truncate">{name}</div>
+          <div 
+            onClick={() => copyToClipboard(name, 'Company name')}
+            className="font-medium text-gray-900 text-sm truncate cursor-pointer hover:text-blue-600 transition-colors"
+            title="Click to copy"
+          >
+            {name}
+          </div>
         </td>
 
         {/* Industry */}
         <td className="px-2 py-2 w-[12%]">
-          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+          <div 
+            onClick={() => copyToClipboard(industry_type, 'Industry')}
+            className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition-colors"
+            title="Click to copy"
+          >
             <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
             <span className="truncate">{industry_type}</span>
           </div>
@@ -52,7 +73,11 @@ export default function InternshipRow({ internship, onUpdate, onDelete, onEdit }
         {/* Location */}
         <td className="px-3 py-2 w-[20%]">
           {address ? (
-            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+            <div 
+              onClick={() => copyToClipboard(address, 'Location')}
+              className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer hover:text-blue-600 transition-colors"
+              title="Click to copy"
+            >
               <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" strokeWidth={1.5} />
               <span className="truncate">{address}</span>
             </div>

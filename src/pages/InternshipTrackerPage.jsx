@@ -1,15 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useInternships } from '../hooks/useInternships';
 import { useRegions } from '../hooks/useRegions';
 import RegionSection from '../components/RegionSection';
 import InternshipForm from '../components/InternshipForm';
+import TrackerFilters from '../components/TrackerFilters';
 
 export default function InternshipTrackerPage() {
   const { internships, loading, error, updateInternship, removeInternship, addInternship } = useInternships(true);
   const { regions } = useRegions();
   const [showForm, setShowForm] = useState(false);
   const [editingInternship, setEditingInternship] = useState(null);
+  
+  // Filter and sort states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('recent');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
 
   const handleUpdateInternship = async (internship) => {
     // Direct update (e.g., status change) without opening form
@@ -57,6 +64,72 @@ export default function InternshipTrackerPage() {
     setEditingInternship(null);
   };
 
+  // Filter and sort internships
+  const filteredAndSortedInternships = useMemo(() => {
+    // Flatten all internships from all regions
+    const allInternships = Object.values(internships).flat();
+
+    // Apply search filter
+    let filtered = allInternships;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(internship => 
+        internship.name?.toLowerCase().includes(query) ||
+        internship.industry_type?.toLowerCase().includes(query) ||
+        internship.address?.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter) {
+      filtered = filtered.filter(internship => internship.status === statusFilter);
+    }
+
+    // Apply priority filter
+    if (priorityFilter) {
+      filtered = filtered.filter(internship => internship.priority === priorityFilter);
+    }
+
+    // Group by region first
+    const groupedByRegion = {};
+    filtered.forEach(internship => {
+      const regionName = internship.region?.name || 'Unassigned';
+      if (!groupedByRegion[regionName]) {
+        groupedByRegion[regionName] = [];
+      }
+      groupedByRegion[regionName].push(internship);
+    });
+
+    // Sort internships within each region
+    Object.keys(groupedByRegion).forEach(regionName => {
+      groupedByRegion[regionName].sort((a, b) => {
+        let sortValueA, sortValueB;
+        
+        switch (sortBy) {
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'priority-high':
+            const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2 };
+            sortValueA = priorityOrder[a.priority || 'Medium'];
+            sortValueB = priorityOrder[b.priority || 'Medium'];
+            return sortValueA - sortValueB;
+          case 'priority-low':
+            const priorityOrderLow = { 'Low': 0, 'Medium': 1, 'High': 2 };
+            sortValueA = priorityOrderLow[a.priority || 'Medium'];
+            sortValueB = priorityOrderLow[b.priority || 'Medium'];
+            return sortValueA - sortValueB;
+          case 'status':
+            return (a.status || '').localeCompare(b.status || '');
+          case 'recent':
+          default:
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        }
+      });
+    });
+
+    return groupedByRegion;
+  }, [internships, searchQuery, sortBy, statusFilter, priorityFilter]);
+
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -83,7 +156,9 @@ export default function InternshipTrackerPage() {
     );
   }
 
-  const regionNames = Object.keys(internships).sort();
+  const regionNames = Object.keys(filteredAndSortedInternships).sort();
+  const totalCount = Object.values(filteredAndSortedInternships).flat().length;
+  const originalCount = Object.values(internships).flat().length;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 pb-20 sm:pb-6">
@@ -107,6 +182,27 @@ export default function InternshipTrackerPage() {
         </button>
       </div>
 
+      {/* Filters */}
+      {originalCount > 0 && (
+        <TrackerFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          priorityFilter={priorityFilter}
+          onPriorityFilterChange={setPriorityFilter}
+        />
+      )}
+
+      {/* Results Count */}
+      {originalCount > 0 && (searchQuery || statusFilter || priorityFilter) && (
+        <div className="mb-4 text-sm text-gray-600">
+          Showing {totalCount} of {originalCount} internship{originalCount !== 1 ? 's' : ''}
+        </div>
+      )}
+
       {/* Internships by Region */}
       {regionNames.length > 0 ? (
         <div>
@@ -114,12 +210,19 @@ export default function InternshipTrackerPage() {
             <RegionSection
               key={regionName}
               regionName={regionName}
-              internships={internships[regionName]}
+              internships={filteredAndSortedInternships[regionName]}
               onUpdateInternship={handleUpdateInternship}
               onEditInternship={handleEditInternship}
               onDeleteInternship={handleDeleteInternship}
             />
           ))}
+        </div>
+      ) : originalCount > 0 ? (
+        <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50/50 px-6 py-12 text-center">
+          <p className="text-sm font-medium text-gray-900">No matching internships</p>
+          <p className="mt-1 text-sm text-gray-500">
+            Try adjusting your filters or search query
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50/50 px-6 py-12 text-center">
